@@ -7,7 +7,7 @@ const MAX_SIZE = Number.MAX_SAFE_INTEGER;
 class App extends React.Component {
   constructor(props) {
     super(props);
-    const n = 4;
+    // const n = 4;
     const squares = [[18, 52, 64, 39], [75, 55, 19, 48], [35, 57, 8, 65], [27, 25, 14, 16]];
     // const squares = [[80, 120, 125], [20, 115, 145], [40, 100, 85], [65, 35, 25], [27, 25, 14]];
     // let squares = Array(n).fill('');
@@ -15,17 +15,49 @@ class App extends React.Component {
     //   squares[i] = new Array(n).fill('');
     // }
     this.state = {
-      squares: squares,
-      rows: 4,
-      columns: 4,
-      n: n,
+      // squares: squares,
+      rows: '',
+      columns: '',
+      error: '',
+      // n: n,
     }
   }
 
   changeValue(i, j, value) {
-    const squares = this.state.squares.slice();
-    squares[i][j] = value;
-    this.setState({ squares: squares });
+    if (value.length === 0 || value.match(/^[0-9]+$/) != null) {
+      const squares = this.state.squares.slice();
+      squares[i][j] = value;
+      if (value !== "")
+        this.setState({ squares, error: undefined, results: undefined });
+      else
+        this.setState({ squares, error: 'Vui lòng nhập đủ các input', results: undefined })
+    }
+  }
+
+  changeRows(rows) {
+    if (rows.length === 0 || rows.match(/^[0-9]+$/) != null) {
+      if (rows !== "") {
+        if (this.state.columns !== "")
+          this.setState({ rows: parseInt(rows), error: undefined });
+        else
+          this.setState({ rows: parseInt(rows), error: 'Vui lòng nhập số công việc' });
+      }
+      else
+        this.setState({ rows, error: 'Vui lòng nhập số nhân viên' });
+    }
+  }
+
+  changeColumns(columns) {
+    if (columns.length === 0 || columns.match(/^[0-9]+$/) != null) {
+      if (columns !== "") {
+        if (this.state.rows !== "")
+          this.setState({ columns: parseInt(columns), error: undefined });
+        else
+          this.setState({ columns: parseInt(columns), error: 'Vui lòng nhập số nhân viên' });
+      }
+      else
+        this.setState({ columns, error: 'Vui lòng nhập số công việc' });
+    }
   }
 
   make_matrix(n, val) {
@@ -235,7 +267,30 @@ class App extends React.Component {
     this.setState({ results });
   }
 
+
+
   render() {
+    if (!this.state.n)
+      return (
+        <div className="App">
+          <img src={logo} className="App-logo" alt="logo" />
+          <h1>Chia công việc</h1>
+          Số nhân viên:
+          <input style={{ margin: 20, fontSize: 24, textAlign: 'center' }} type='text' value={this.state.rows} onChange={(event) => this.changeRows(event.target.value)} size='7' /> <br />
+          Số công việc:
+          <input style={{ margin: 20, fontSize: 24, textAlign: 'center' }} type='text' value={this.state.columns} onChange={(event) => this.changeColumns(event.target.value)} size='7' />
+          <br />
+          <button disabled={this.state.error !== undefined} className="button" onClick={() => {
+            const n = this.state.rows > this.state.columns ? this.state.rows : this.state.columns;
+            const squares = Array(n).fill(null);
+            for (let i = 0; i < n; i++)
+              squares[i] = Array(n).fill('');
+            this.setState({ n, squares: squares });
+          }}><span>Set </span></button>
+          {this.state.error ? <h2 style={{ color: 'red', fontWeight: 'bold' }}>{this.state.error}</h2> : undefined}
+        </div>
+
+      );
     let squares = [];
     let letter = 'A';
     for (let i = 0; i < this.state.rows; i++) {
@@ -265,9 +320,8 @@ class App extends React.Component {
 
         {squares.map(item => item)}
         <br />
-        <button className="button" onClick={() => this.calculate()}><span>Tính </span></button>
-
-        <h2>Kết quả:</h2>
+        <button disabled={this.state.error !== undefined} className="button" onClick={() => this.calculate()}><span>Tính </span></button>
+        {this.state.error ? <h2 style={{ color: 'red', fontWeight: 'bold' }}>{this.state.error}</h2> : <h2>Kết quả:</h2>}
         {this.state.results ? this.state.results.map(value => {
           const letter = 'A';
           const row = value[0];
